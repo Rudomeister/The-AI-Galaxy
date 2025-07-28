@@ -1,0 +1,424 @@
+# AI-Galaxy State Machine Configuration
+# This YAML file defines the workflow states, transitions, and agent assignments
+# for processing ideas through the AI-Galaxy ecosystem.
+
+# Metadata
+version: "1.0"
+description: "AI-Galaxy idea processing workflow state machine"
+created_at: "2025-01-27"
+
+# Global settings
+settings:
+  default_timeout: 300  # Default timeout in seconds for agent operations
+  max_retries: 3       # Maximum retry attempts for failed operations
+  logging_level: "INFO"
+  enable_parallel_processing: false
+
+# Agent definitions and their capabilities
+agents:
+  validation_agent:
+    name: "Validation Agent"
+    description: "Validates incoming ideas for feasibility and completeness"
+    capabilities: ["validate_idea", "check_prerequisites", "assess_feasibility"]
+    timeout: 120
+    
+  council_agent:
+    name: "Council Agent"
+    description: "Reviews validated ideas and makes approval decisions"
+    capabilities: ["review_idea", "assess_priority", "make_decision"]
+    timeout: 300
+    
+  template_agent:
+    name: "Template Agent"
+    description: "Creates implementation templates for approved ideas"
+    capabilities: ["create_template", "generate_structure", "define_requirements"]
+    timeout: 180
+    
+  implementation_agent:
+    name: "Implementation Agent"
+    description: "Oversees the implementation process and coordinates development"
+    capabilities: ["start_implementation", "coordinate_development", "track_progress"]
+    timeout: 600
+    
+  coding_agent:
+    name: "Coding Agent"
+    description: "Handles the actual coding and development work"
+    capabilities: ["write_code", "create_tests", "debug_issues"]
+    timeout: 1200
+    
+  archival_agent:
+    name: "Archival Agent"
+    description: "Manages completed or rejected ideas for historical reference"
+    capabilities: ["archive_idea", "update_metadata", "generate_reports"]
+    timeout: 60
+
+# State definitions
+states:
+  created:
+    name: "Created"
+    description: "Initial state when an idea is first submitted"
+    is_initial: true
+    is_terminal: false
+    allowed_transitions:
+      - validated
+      - rejected
+    metadata:
+      color: "#e3f2fd"
+      icon: "lightbulb"
+      
+  validated:
+    name: "Validated"
+    description: "Idea has passed initial validation checks"
+    is_initial: false
+    is_terminal: false
+    allowed_transitions:
+      - council_review
+      - rejected
+    metadata:
+      color: "#e8f5e8"
+      icon: "check-circle"
+      
+  council_review:
+    name: "Council Review"
+    description: "Idea is under review by the council for strategic alignment"
+    is_initial: false
+    is_terminal: false
+    allowed_transitions:
+      - approved
+      - rejected
+    metadata:
+      color: "#fff3e0"
+      icon: "users"
+      
+  approved:
+    name: "Approved"
+    description: "Idea has been approved for implementation"
+    is_initial: false
+    is_terminal: false
+    allowed_transitions:
+      - template_created
+      - rejected  # Can still be rejected if issues arise
+    metadata:
+      color: "#e8f5e8"
+      icon: "thumbs-up"
+      
+  rejected:
+    name: "Rejected"
+    description: "Idea has been rejected at some stage"
+    is_initial: false
+    is_terminal: true
+    allowed_transitions:
+      - archived
+    metadata:
+      color: "#ffebee"
+      icon: "x-circle"
+      
+  template_created:
+    name: "Template Created"
+    description: "Implementation template and structure have been created"
+    is_initial: false
+    is_terminal: false
+    allowed_transitions:
+      - implementation_started
+      - rejected
+    metadata:
+      color: "#f3e5f5"
+      icon: "file-text"
+      
+  implementation_started:
+    name: "Implementation Started"
+    description: "Implementation process has begun"
+    is_initial: false
+    is_terminal: false
+    allowed_transitions:
+      - coding_in_progress
+      - rejected
+    metadata:
+      color: "#e1f5fe"
+      icon: "play"
+      
+  coding_in_progress:
+    name: "Coding in Progress"
+    description: "Active development and coding is taking place"
+    is_initial: false
+    is_terminal: false
+    allowed_transitions:
+      - completed
+      - implementation_started  # Can go back if issues found
+      - rejected
+    metadata:
+      color: "#e0f2f1"
+      icon: "code"
+      
+  completed:
+    name: "Completed"
+    description: "Idea has been successfully implemented and deployed"
+    is_initial: false
+    is_terminal: true
+    allowed_transitions:
+      - archived
+    metadata:
+      color: "#e8f5e8"
+      icon: "check-circle-2"
+      
+  archived:
+    name: "Archived"
+    description: "Idea has been archived for historical reference"
+    is_initial: false
+    is_terminal: true
+    allowed_transitions: []
+    metadata:
+      color: "#fafafa"
+      icon: "archive"
+
+# Transition rules and agent assignments
+transitions:
+  created_to_validated:
+    from: "created"
+    to: "validated"
+    agent: "validation_agent"
+    conditions:
+      - "idea.description is not null"
+      - "idea.title is not null"
+      - "len(idea.description) >= 10"
+    actions:
+      - "validate_idea_structure"
+      - "check_duplicate_ideas"
+      - "assess_basic_feasibility"
+    retry_on_failure: true
+    
+  created_to_rejected:
+    from: "created"
+    to: "rejected"
+    agent: "validation_agent"
+    conditions:
+      - "validation_failed"
+    actions:
+      - "log_rejection_reason"
+      - "notify_submitter"
+    retry_on_failure: false
+    
+  validated_to_council_review:
+    from: "validated"
+    to: "council_review"
+    agent: "council_agent"
+    conditions:
+      - "idea.priority >= 3"  # Only medium+ priority ideas go to council
+    actions:
+      - "schedule_council_review"
+      - "prepare_review_materials"
+    retry_on_failure: true
+    
+  validated_to_rejected:
+    from: "validated"
+    to: "rejected"
+    agent: "validation_agent"
+    conditions:
+      - "detailed_validation_failed"
+    actions:
+      - "log_detailed_rejection_reason"
+      - "provide_improvement_suggestions"
+    retry_on_failure: false
+    
+  council_review_to_approved:
+    from: "council_review"
+    to: "approved"
+    agent: "council_agent"
+    conditions:
+      - "council_approval_received"
+      - "strategic_alignment_confirmed"
+    actions:
+      - "record_approval_decision"
+      - "assign_priority_level"
+      - "allocate_resources"
+    retry_on_failure: false
+    
+  council_review_to_rejected:
+    from: "council_review"
+    to: "rejected"
+    agent: "council_agent"
+    conditions:
+      - "council_rejection_received"
+    actions:
+      - "record_rejection_decision"
+      - "provide_feedback"
+    retry_on_failure: false
+    
+  approved_to_template_created:
+    from: "approved"
+    to: "template_created"
+    agent: "template_agent"
+    conditions:
+      - "resources_available"
+    actions:
+      - "analyze_requirements"
+      - "create_project_template"
+      - "define_implementation_plan"
+      - "set_milestones"
+    retry_on_failure: true
+    
+  approved_to_rejected:
+    from: "approved"
+    to: "rejected"
+    agent: "template_agent"
+    conditions:
+      - "template_creation_impossible"
+    actions:
+      - "log_technical_constraints"
+      - "suggest_alternatives"
+    retry_on_failure: false
+    
+  template_created_to_implementation_started:
+    from: "template_created"
+    to: "implementation_started"
+    agent: "implementation_agent"
+    conditions:
+      - "template_approved"
+      - "development_team_assigned"
+    actions:
+      - "initialize_project_structure"
+      - "set_up_development_environment"
+      - "create_initial_documentation"
+    retry_on_failure: true
+    
+  template_created_to_rejected:
+    from: "template_created"
+    to: "rejected"
+    agent: "implementation_agent"
+    conditions:
+      - "implementation_not_feasible"
+    actions:
+      - "document_feasibility_issues"
+    retry_on_failure: false
+    
+  implementation_started_to_coding_in_progress:
+    from: "implementation_started"
+    to: "coding_in_progress"
+    agent: "coding_agent"
+    conditions:
+      - "development_environment_ready"
+      - "requirements_clear"
+    actions:
+      - "begin_development"
+      - "create_initial_codebase"
+      - "implement_core_features"
+    retry_on_failure: true
+    
+  implementation_started_to_rejected:
+    from: "implementation_started"
+    to: "rejected"
+    agent: "coding_agent"
+    conditions:
+      - "critical_blocker_encountered"
+    actions:
+      - "document_blocking_issues"
+    retry_on_failure: false
+    
+  coding_in_progress_to_completed:
+    from: "coding_in_progress"
+    to: "completed"
+    agent: "coding_agent"
+    conditions:
+      - "all_features_implemented"
+      - "tests_passing"
+      - "code_review_approved"
+    actions:
+      - "finalize_implementation"
+      - "deploy_to_production"
+      - "update_documentation"
+      - "notify_stakeholders"
+    retry_on_failure: true
+    
+  coding_in_progress_to_implementation_started:
+    from: "coding_in_progress"
+    to: "implementation_started"
+    agent: "implementation_agent"
+    conditions:
+      - "major_rework_needed"
+    actions:
+      - "reassess_approach"
+      - "update_implementation_plan"
+    retry_on_failure: true
+    
+  coding_in_progress_to_rejected:
+    from: "coding_in_progress"
+    to: "rejected"
+    agent: "coding_agent"
+    conditions:
+      - "implementation_impossible"
+    actions:
+      - "document_final_issues"
+    retry_on_failure: false
+    
+  rejected_to_archived:
+    from: "rejected"
+    to: "archived"
+    agent: "archival_agent"
+    conditions:
+      - "archival_period_elapsed"
+    actions:
+      - "prepare_archival_package"
+      - "update_historical_records"
+    retry_on_failure: true
+    
+  completed_to_archived:
+    from: "completed"
+    to: "archived"
+    agent: "archival_agent"
+    conditions:
+      - "archival_requested"
+    actions:
+      - "prepare_success_archive"
+      - "generate_completion_report"
+    retry_on_failure: true
+
+# Routing rules for determining next steps
+routing_rules:
+  priority_based:
+    description: "Route based on idea priority level"
+    conditions:
+      - "state == 'validated' and idea.priority >= 7"
+    action: "expedite_to_council"
+    
+  resource_based:
+    description: "Route based on available resources"
+    conditions:
+      - "state == 'approved' and available_developers > 0"
+    action: "proceed_to_template"
+    
+  time_based:
+    description: "Route based on time constraints"
+    conditions:
+      - "state == 'council_review' and days_in_state > 7"
+    action: "escalate_review"
+
+# Error handling and fallback rules
+error_handling:
+  agent_timeout:
+    action: "retry_with_backoff"
+    max_retries: 3
+    fallback_state: "rejected"
+    
+  agent_failure:
+    action: "log_and_escalate"
+    fallback_agent: "validation_agent"
+    
+  invalid_transition:
+    action: "log_error_and_maintain_state"
+    notification: true
+
+# Monitoring and metrics
+monitoring:
+  state_duration_alerts:
+    council_review: 7  # Alert if in council review for more than 7 days
+    coding_in_progress: 30  # Alert if coding for more than 30 days
+    
+  success_metrics:
+    - "completion_rate"
+    - "average_processing_time"
+    - "agent_efficiency"
+    
+  failure_metrics:
+    - "rejection_rate_by_state"
+    - "timeout_frequency"
+    - "retry_frequency"

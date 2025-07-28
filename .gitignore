@@ -2,10 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-ai_galaxy/
-frontend/
-generated_code/
-scripts/
 # C extensions
 claude.MD
 *.so
