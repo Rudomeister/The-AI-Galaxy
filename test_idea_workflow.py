@@ -64,15 +64,15 @@ async def check_api_health():
             async with session.get(f"{API_BASE_URL}/health") as response:
                 if response.status == 200:
                     health_data = await response.json()
-                    print(f"✅ API Health: {health_data['status']}")
+                    print(f"OK API Health: {health_data['status']}")
                     print(f"   Uptime: {health_data['uptime_seconds']:.1f} seconds")
                     print(f"   Services: {health_data['services']}")
                     return True
                 else:
-                    print(f"❌ API Health Check Failed: {response.status}")
+                    print(f"ERROR API Health Check Failed: {response.status}")
                     return False
     except Exception as e:
-        print(f"❌ Cannot connect to API: {str(e)}")
+        print(f"ERROR Cannot connect to API: {str(e)}")
         return False
 
 
@@ -175,12 +175,12 @@ async def get_agent_status(session):
 
 async def main():
     """Main test function."""
-    print("🚀 AI-Galaxy Idea Workflow Test")
+    print("AI-Galaxy Idea Workflow Test")
     print("=" * 50)
     
     # Check API health
     if not await check_api_health():
-        print("❌ API is not available. Please start AI-Galaxy first.")
+        print("ERROR: API is not available. Please start AI-Galaxy first.")
         return
     
     async with aiohttp.ClientSession() as session:

@@ -14,7 +14,13 @@
       "Bash(\"/c/Users/gehau/anaconda3/envs/Galaxian/python.exe\" main.py --config config.yaml --verbose)",
       "Bash(\"/c/Users/gehau/anaconda3/envs/Galaxian/python.exe\" main.py --config config.yaml)",
       "mcp__ide__executeCode",
-      "WebFetch(domain:fastapi.tiangolo.com)"
+      "WebFetch(domain:fastapi.tiangolo.com)",
+      "Bash(pip install:*)",
+      "Bash(conda:*)",
+      "Bash(curl:*)",
+      "Bash(where conda)",
+      "Bash(source:*)",
+      "Bash(\"/c/Users/gehau/Miniconda3/Scripts/conda.exe\" env list)"
     ],
     "deny": []
   }
