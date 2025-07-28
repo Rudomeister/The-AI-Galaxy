@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(python:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(conda activate:*)",
+      "Bash(C:Usersgehauanaconda3envsGalaxianpython.exe main.py --config config.yaml --verbose)",
+      "Bash(\"/c/Users/gehau/anaconda3/envs/Galaxian/python.exe\" main.py --config config.yaml --verbose)",
+      "Bash(\"/c/Users/gehau/anaconda3/envs/Galaxian/python.exe\" main.py --config config.yaml)",
+      "mcp__ide__executeCode",
+      "WebFetch(domain:fastapi.tiangolo.com)"
+    ],
+    "deny": []
+  }
+}

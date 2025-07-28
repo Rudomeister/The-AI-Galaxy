@@ -1,0 +1,55 @@
+# Core AI-Galaxy Dependencies
+redis
+pydantic
+pyyaml
+openai
+chromadb
+
+# Web Framework & API
+fastapi
+uvicorn[standard]
+python-multipart
+websockets
+
+# Async & Performance
+aioredis
+aiofiles
+asyncio
+
+# ML & NLP
+sentence-transformers
+numpy
+scikit-learn
+transformers
+
+# Code Generation & Analysis
+black
+isort
+autopep8
+ast-decompiler
+
+# Vector Search & Embeddings
+chromadb
+faiss-cpu
+
+# Data Processing
+pandas
+python-dotenv
+requests
+
+# Testing & Quality
+pytest
+pytest-asyncio
+coverage
+
+# Monitoring & Logging
+structlog
+prometheus-client
+
+# Development Tools
+watchdog
+rich
+
+# Optional GPU Support (comment out if not needed)
+torch
+torchvision

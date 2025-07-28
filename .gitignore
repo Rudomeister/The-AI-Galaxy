@@ -9,15 +9,7 @@ scripts/
 # C extensions
 claude.MD
 *.so
-# General files for security prevention
-ai_galaxy/
-frontend/
-generated_code/
-scripts/
-*.py
-*.txt
-*.yaml
-*.json
+
 # Distribution / packaging
 .Python
 build/

@@ -1,0 +1,27 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: C:\Users\gehau\prosjekter\The-AI-Galaxy    │
+╰───────────────────────────────────────────────────╯
+● Compact summary (ctrl+r to expand)
+  ⎿  Read TESTING_WORKFLOW.md (221 lines)
+  ⎿  Read test_idea_workflow.py (232 lines)
+  ⎿  Read frontend\src\services\ideaService.ts (66 lines)
+  ⎿  Read frontend\src\services\systemService.ts (25 lines)
+  ⎿  Read frontend\src\services\agentService.ts (49 lines)
+  ⎿  Todo list read (15 items)
+  ⎿  Claude usage limit reached. Your limit will reset at 6pm (Europe/Oslo).
+
+      • /upgrade to increase your usage limit.
+
+> /memory 
+  ⎿  Opened project (local) memory at ./CLAUDE.local.md
+
+     > To use a different editor, set the $EDITOR or $VISUAL environment variable.
+
+> /terminal-setup 
+  ⎿  Found existing VSCode terminal Shift+Enter key binding. Remove it to continue.
+     See C:\Users\gehau\AppData\Roaming\Code\User\keybindings.json
+
