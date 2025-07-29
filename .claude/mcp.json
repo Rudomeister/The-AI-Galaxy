@@ -1,0 +1,39 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/mcp-server"
+      ],
+      "env": {
+        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}"
+      }
+    },
+    "dockerhub": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "HUB_PAT_TOKEN",
+        "mcp/dockerhub",
+        "--transport=stdio",
+        "--username={{dockerhub.username}}"
+      ],
+      "env": {
+        "HUB_PAT_TOKEN": "dckr_pat_Rikxy1_O3kKcM0DzcqtQ100hsSY"
+      }
+    },
+    "playwright": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "mcp/playwright"
+      ]
+    }
+  }
+}

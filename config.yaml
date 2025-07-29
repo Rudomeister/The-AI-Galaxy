@@ -1,0 +1,47 @@
+# AI-Galaxy System Configuration
+# This file configures all core services and components
+
+# Redis Configuration
+redis:
+  host: "localhost"
+  port: 6379
+  db: 0
+  password: null
+  max_connections: 20
+  socket_timeout: 5.0
+  connection_timeout: 10.0
+  retry_on_timeout: true
+  health_check_interval: 30
+
+# Vector Search Configuration  
+search:
+  chroma_host: "localhost"
+  chroma_port: 8000
+  embedding_model: "all-MiniLM-L6-v2"
+  max_results: 50
+  similarity_threshold: 0.7
+  index_batch_size: 100
+  cache_ttl_seconds: 3600
+
+# System Orchestrator Configuration
+orchestrator:
+  heartbeat_interval: 30
+  task_timeout: 300
+  max_concurrent_tasks: 10
+  workflow_timeout: 3600
+  health_check_interval: 60
+  cleanup_interval: 300
+  agent_offline_threshold: 3600
+
+# System Configuration
+system:
+  log_level: "INFO"
+  enable_api: true
+  api_host: "0.0.0.0"
+  api_port: 8080
+  enable_web_ui: true
+  web_ui_port: 3000
+  auto_start_agents: true
+  agent_startup_delay: 2.0
+  health_check_enabled: true
+  metrics_collection_enabled: true

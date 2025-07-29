@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(python:*)",
+      "Bash(rm:*)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(conda activate:*)",
+      "Bash(git push:*)",
+      "Bash(python:*)",
+      "mcp__ide__executeCode",
+      "WebFetch(domain:fastapi.tiangolo.com)",
+      "Bash(uv pip install:*)",
+      "Bash(conda:*)",
+      "Bash(curl:*)",
+      "Bash(where conda)",
+      "Bash(source:*)",
+      "Bash(\"/c/Users/gehau/anaconda3/Scripts/conda.exe\" env list)",
+      "Bash(where claude)",
+      "Bash(claude mcp:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(npm run build:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker exec:*)",
+      "WebFetch(domain:medium.com)",
+      "Bash(docker:*)",
+      "Bash(timeout 30 docker-compose up ai-galaxy-backend -d)",
+      "Bash(grep:*)",
+      "Bash(dir)"
+    ],
+    "deny": []
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "context7",
+    "dockerhub",
+    "playwright"
+  ]
+}

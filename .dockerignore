@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+TUTORIAL.md
+TODO_PROGRESS.md
+TESTING_WORKFLOW.md
+
+# Logs
+logs/
+*.log
+
+# Testing
+tests/
+test_*.py
+*_test.py
+
+# Development
+.vscode/
+.idea/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache/
+.coverage
+
+# Node modules (should not be in root anyway)
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Frontend build (will be built separately)
+frontend/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated code and logs will be mounted as volumes
+generated_code/
+scripts/
