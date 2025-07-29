@@ -32,7 +32,8 @@
       "Bash(docker:*)",
       "Bash(timeout 30 docker-compose up ai-galaxy-backend -d)",
       "Bash(grep:*)",
-      "Bash(dir)"
+      "Bash(dir)",
+      "Bash(dir /a C:UsersgehauprosjekterThe-AI-Galaxy)"
     ],
     "deny": []
   },
