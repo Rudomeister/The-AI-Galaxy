@@ -35,6 +35,7 @@ from ai_galaxy.shared.logger import get_logger, LogContext
 from ai_galaxy.shared.models import SystemState
 from ai_galaxy.services.redis import RedisConfig, create_redis_service
 from ai_galaxy.services.vector_search import SearchConfig, create_vector_search_service
+from ai_galaxy.services.workflow_recovery import WorkflowRecoveryService, WorkflowRecoveryConfig, create_workflow_recovery_service
 from ai_galaxy.orchestrator import (
     SystemOrchestrator, OrchestratorConfig, create_orchestrator,
     AgentStatus, TaskPriority
@@ -42,13 +43,21 @@ from ai_galaxy.orchestrator import (
 
 # Import agents
 from ai_galaxy.core.agents.router_agent import RouterAgent
+from ai_galaxy.core.agents.router_agent_enhanced import EnhancedRouterAgent
 from ai_galaxy.core.agents.validator_agent import ValidatorAgent
+from ai_galaxy.core.agents.validator_agent_enhanced import EnhancedValidatorAgent  # Enhanced validator agent
 from ai_galaxy.core.agents.council_agent import CouncilAgent
+from ai_galaxy.core.agents.council_agent_enhanced import EnhancedCouncilAgent
 from ai_galaxy.core.agents.creator_agent import CreatorAgent
+from ai_galaxy.core.agents.creator_agent_enhanced import EnhancedCreatorAgent
 from ai_galaxy.core.agents.implementer_agent import ImplementerAgent
+from ai_galaxy.core.agents.implementer_agent_enhanced import EnhancedImplementerAgent
 from ai_galaxy.core.agents.programmer_agent import ProgrammerAgent
+from ai_galaxy.core.agents.programmer_agent_enhanced import EnhancedProgrammerAgent
 from ai_galaxy.core.agents.registrar_agent import RegistrarAgent
+from ai_galaxy.core.agents.registrar_agent_enhanced import EnhancedRegistrarAgent
 from ai_galaxy.core.agents.evolution_agent import EvolutionAgent
+from ai_galaxy.core.agents.evolution_agent_enhanced import EnhancedEvolutionAgent
 
 
 class AIGalaxyConfig:
@@ -68,7 +77,10 @@ class AIGalaxyConfig:
             'auto_start_agents': True,
             'agent_startup_delay': 2.0,
             'health_check_enabled': True,
-            'metrics_collection_enabled': True
+            'metrics_collection_enabled': True,
+            'workflow_recovery_enabled': True,
+            'workflow_recovery_check_interval': 60,
+            'workflow_recovery_stuck_threshold': 10
         }
     
     @classmethod
@@ -152,6 +164,7 @@ class AIGalaxyApplication:
         self.orchestrator: Optional[SystemOrchestrator] = None
         self.redis_service = None
         self.vector_search_service = None
+        self.workflow_recovery_service: Optional[WorkflowRecoveryService] = None
         
         # Agent instances
         self.agents: Dict[str, Any] = {}
@@ -202,6 +215,10 @@ class AIGalaxyApplication:
             # Initialize and register agents
             if self.config.system['auto_start_agents']:
                 await self._initialize_agents()
+            
+            # Initialize workflow recovery service
+            if self.config.system['workflow_recovery_enabled']:
+                await self._initialize_workflow_recovery()
             
             # Start monitoring tasks
             await self._start_monitoring()
@@ -301,6 +318,11 @@ class AIGalaxyApplication:
             # Unregister agents
             await self._shutdown_agents()
             
+            # Stop workflow recovery service
+            if self.workflow_recovery_service:
+                await self.workflow_recovery_service.stop()
+                self.logger.info("Workflow recovery service stopped")
+            
             # Stop API server
             await self._stop_api_server()
             
@@ -331,43 +353,43 @@ class AIGalaxyApplication:
             agent_configs = [
                 {
                     'name': 'router_agent',
-                    'class': RouterAgent,
-                    'capabilities': ['idea_routing', 'semantic_analysis', 'department_assignment']
+                    'class': EnhancedRouterAgent,
+                    'capabilities': ['idea_routing', 'semantic_analysis', 'department_assignment', 'intelligent_routing', 'domain_classification', 'similarity_matching', 'workload_assessment', 'adaptive_learning']
                 },
                 {
                     'name': 'validator_agent', 
-                    'class': ValidatorAgent,
-                    'capabilities': ['idea_validation', 'feasibility_check', 'quality_assessment']
+                    'class': EnhancedValidatorAgent,  # Use enhanced validator with message processing
+                    'capabilities': ['idea_validation', 'feasibility_check', 'quality_assessment', 'completeness_check', 'format_compliance', 'duplicate_detection', 'conflict_detection']
                 },
                 {
                     'name': 'council_agent',
-                    'class': CouncilAgent,
-                    'capabilities': ['strategic_review', 'resource_allocation', 'priority_setting']
+                    'class': EnhancedCouncilAgent,
+                    'capabilities': ['strategic_review', 'resource_allocation', 'priority_setting', 'decision_making', 'appeal_processing']
                 },
                 {
                     'name': 'creator_agent',
-                    'class': CreatorAgent,
-                    'capabilities': ['template_creation', 'structure_design', 'scaffolding']
+                    'class': EnhancedCreatorAgent,
+                    'capabilities': ['template_creation', 'structure_design', 'scaffolding', 'technology_selection', 'implementation_planning', 'department_routing']
                 },
                 {
                     'name': 'implementer_agent',
-                    'class': ImplementerAgent,
-                    'capabilities': ['implementation_planning', 'task_breakdown', 'coordination']
+                    'class': EnhancedImplementerAgent,
+                    'capabilities': ['implementation_planning', 'task_breakdown', 'coordination', 'implementation_orchestration', 'resource_allocation', 'progress_monitoring', 'risk_management']
                 },
                 {
                     'name': 'programmer_agent',
-                    'class': ProgrammerAgent,
-                    'capabilities': ['code_generation', 'programming', 'testing', 'debugging']
+                    'class': EnhancedProgrammerAgent,
+                    'capabilities': ['code_generation', 'programming', 'testing', 'debugging', 'architecture_design', 'code_optimization', 'documentation_generation', 'quality_assurance', 'multi_language_support']
                 },
                 {
                     'name': 'registrar_agent',
-                    'class': RegistrarAgent,
-                    'capabilities': ['service_registration', 'metadata_management', 'cataloging']
+                    'class': EnhancedRegistrarAgent,
+                    'capabilities': ['service_registration', 'metadata_management', 'quality_assessment', 'compliance_checking', 'documentation_generation', 'lifecycle_management', 'service_discovery', 'vector_search', 'analytics_reporting', 'governance_oversight', 'performance_monitoring', 'dependency_analysis', 'quality_gates', 'ecosystem_integration']
                 },
                 {
                     'name': 'evolution_agent',
-                    'class': EvolutionAgent,
-                    'capabilities': ['system_evolution', 'optimization', 'adaptation']
+                    'class': EnhancedEvolutionAgent,
+                    'capabilities': ['ecosystem_health_monitoring', 'learning_pattern_analysis', 'evolution_recommendation_generation', 'agent_performance_tracking', 'auto_optimization', 'comprehensive_reporting', 'predictive_trend_analysis', 'innovation_tracking', 'system_adaptation_scoring', 'performance_improvement_orchestration', 'cross_agent_correlation_analysis', 'intelligent_bottleneck_prediction', 'adaptive_intelligence', 'evolutionary_optimization']
                 }
             ]
             
@@ -428,17 +450,114 @@ class AIGalaxyApplication:
     async def _create_agent_instance(self, agent_class, agent_name: str):
         """Create an agent instance with basic configuration."""
         try:
-            # For now, create instances with default configuration
-            # This is a simplified approach - in production you'd want proper config injection
-            agent_instance = agent_class()
-            return agent_instance
+            # Special handling for enhanced agents
+            if agent_class.__name__ == 'EnhancedValidatorAgent':
+                # The enhanced validator agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced validator agent")
+                    return None
+                self.logger.info(f"Enhanced validator agent initialized successfully")
+                return agent_instance
+            elif agent_class.__name__ == 'EnhancedCouncilAgent':
+                # The enhanced council agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced council agent")
+                    return None
+                self.logger.info(f"Enhanced council agent initialized successfully")
+                return agent_instance
+            elif agent_class.__name__ == 'EnhancedCreatorAgent':
+                # The enhanced creator agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced creator agent")
+                    return None
+                self.logger.info(f"Enhanced creator agent initialized successfully")
+                return agent_instance
+            elif agent_class.__name__ == 'EnhancedImplementerAgent':
+                # The enhanced implementer agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced implementer agent")
+                    return None
+                self.logger.info(f"Enhanced implementer agent initialized successfully")
+                return agent_instance
+            elif agent_class.__name__ == 'EnhancedProgrammerAgent':
+                # The enhanced programmer agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced programmer agent")
+                    return None
+                self.logger.info(f"Enhanced programmer agent initialized successfully")
+                return agent_instance
+            elif agent_class.__name__ == 'EnhancedRouterAgent':
+                # The enhanced router agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced router agent")
+                    return None
+                self.logger.info(f"Enhanced router agent initialized successfully")
+                return agent_instance
+            elif agent_class.__name__ == 'EnhancedRegistrarAgent':
+                # The enhanced registrar agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced registrar agent")
+                    return None
+                self.logger.info(f"Enhanced registrar agent initialized successfully")
+                return agent_instance
+            elif agent_class.__name__ == 'EnhancedEvolutionAgent':
+                # The enhanced evolution agent requires async initialization
+                agent_instance = agent_class(redis_config=self.config.redis)
+                # Initialize the agent
+                success = await agent_instance.initialize()
+                if not success:
+                    self.logger.error(f"Failed to initialize enhanced evolution agent")
+                    return None
+                self.logger.info(f"Enhanced evolution agent initialized successfully")
+                return agent_instance
+            else:
+                # For other agents, create instances with default configuration
+                # This is a simplified approach - in production you'd want proper config injection
+                agent_instance = agent_class()
+                return agent_instance
         except Exception as e:
             self.logger.error(f"Error creating {agent_name} instance: {str(e)}")
+            self.logger.error(traceback.format_exc())
             return None
     
     async def _agent_heartbeat_loop(self, agent_name: str):
         """Send periodic heartbeats for an agent to the orchestrator."""
         try:
+            # Check if this is an enhanced agent that handles its own heartbeats
+            if agent_name in self.agents:
+                agent_info = self.agents[agent_name]
+                agent_class_name = agent_info['class'].__name__ if 'class' in agent_info else ''
+                
+                # Enhanced agents handle their own heartbeats, so we just monitor them
+                if agent_class_name in ['EnhancedValidatorAgent', 'EnhancedCouncilAgent', 'EnhancedCreatorAgent', 'EnhancedImplementerAgent', 'EnhancedProgrammerAgent', 'EnhancedRouterAgent', 'EnhancedRegistrarAgent', 'EnhancedEvolutionAgent']:
+                    self.logger.info(f"Enhanced agent {agent_name} handles its own heartbeats")
+                    # Just keep the task running to maintain agent registry entry
+                    while self.is_running and agent_name in self.agents:
+                        await asyncio.sleep(60)  # Check every minute
+                    return
+            
+            # For traditional agents, send heartbeats manually
             while self.is_running and agent_name in self.agents:
                 try:
                     # Send heartbeat message to orchestrator
@@ -466,6 +585,38 @@ class AIGalaxyApplication:
             self.logger.debug(f"Heartbeat loop cancelled for {agent_name}")
         except Exception as e:
             self.logger.error(f"Fatal error in heartbeat loop for {agent_name}: {str(e)}")
+    
+    async def _initialize_workflow_recovery(self):
+        """Initialize and start the workflow recovery service."""
+        try:
+            self.logger.info("Initializing workflow recovery service...")
+            
+            # Create recovery service configuration
+            recovery_config = WorkflowRecoveryConfig(
+                check_interval_seconds=self.config.system['workflow_recovery_check_interval'],
+                stuck_threshold_minutes=self.config.system['workflow_recovery_stuck_threshold'],
+                max_recovery_attempts=3,
+                recovery_timeout_seconds=300
+            )
+            
+            # Create and initialize the recovery service
+            self.workflow_recovery_service = await create_workflow_recovery_service(
+                redis_service=self.redis_service,
+                config=recovery_config
+            )
+            
+            # Start the recovery service
+            await self.workflow_recovery_service.start()
+            
+            # Perform an immediate check for stuck ideas from potential restart
+            self.logger.info("Performing initial check for stuck ideas after system restart...")
+            initial_stats = await self.workflow_recovery_service.force_check_now()
+            
+            context = LogContext(additional_context=initial_stats)
+            self.logger.info("Workflow recovery service initialized and initial check completed", context)
+            
+        except Exception as e:
+            self.logger.error(f"Failed to initialize workflow recovery service: {str(e)}")
     
     async def _shutdown_agents(self):
         """Shutdown and unregister all agents."""

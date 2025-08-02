@@ -6,8 +6,10 @@ __pycache__/
 
 *.so
 
+
 # Distribution / packaging
 .Python
+.git/
 build/
 develop-eggs/
 dist/
@@ -25,7 +27,7 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+.claude/
 # PyInstaller
 *.manifest
 *.spec

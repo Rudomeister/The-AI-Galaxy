@@ -22,7 +22,7 @@
         "--username={{dockerhub.username}}"
       ],
       "env": {
-        "HUB_PAT_TOKEN": "dckr_pat_Rikxy1_O3kKcM0DzcqtQ100hsSY"
+        "HUB_PAT_TOKEN": "{{dockerhub.pat_token}}"
       }
     },
     "playwright": {
